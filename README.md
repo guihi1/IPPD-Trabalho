@@ -62,6 +62,17 @@ Aqui também foi feito o mesmo que anteriormente para paralelizar a inicializaç
 }
 ```
 
-Essa é a parte mais complexa do código. Após criar a região paralela, foi feito o uso `local_h` para criar um vetor local e armazenar os resultados parciais do programa e evitar condições de corrida.
+Essa é a parte mais complexa do código. Após criar a região paralela, foi feito o uso de `local_h` para criar um vetor local e armazenar os resultados parciais do programa e evitar condições de corrida.
 Depois disso, é feito o uso de `#pragma omp for collapse(3)`, o que faz com que o loop de `j`, `k` e `l` sejam paralelizados combinando as três iterações em uma única iteração paralelizada.
 Por fim, depois que as threads calculam os valores locais em `local_h`, os resultados são combinados no vetor `h`. Para isso, foi utilizado `#pragma omp critical` que garante que o acesso à `h` seja feito de forma segura, ou seja, apenas uma thread por vez pode atualizar o valor de `h`.
+
+## Speedup
+
+Nessa tabela abaixo, o programa foi executado 10 vezes e foi utilizado a média de todos os tempos para o tempo da tabela. Para o cálculo do speedup, foi divido o médio com 1 thread pelo tempo que levou para X threads.
+
+| N° threads | Tempo (s)   | Speedup  |
+| ---------- | ----------- | -------- |
+| 1          | 30.13569628 |          |
+| 2          | 16.7922666  | 1.794618 |
+| 4          | 11.1633347  | 2.6995   |
+| 8          | 8.01657714  | 3.759172 |
