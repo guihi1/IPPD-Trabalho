@@ -1,7 +1,7 @@
 #include <math.h>
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #define RGB_COMPONENT_COLOR 255
 #define DIVS 8
@@ -85,38 +85,58 @@ static PPMImage *readPPM(const char *filename) {
 }
 
 void Histogram(PPMImage *image, float *h) {
+  int i, j, k, l;
+  long n = image->x * image->y;
 
-  int i = 0, j, k, l, count;
-  int rows, cols;
+  printf("NUMERO DE THREADS: %d\n", omp_get_max_threads());
 
-  long n = image->y * image->x;
-
-  cols = image->x;
-  rows = image->y;
-
+// Step 1: Normaliza os valores dos pixels
 #pragma omp parallel for
   for (i = 0; i < n; i++) {
-    image->data[i].red = floor((image->data[i].red * DIVS) / 256);
-    image->data[i].blue = floor((image->data[i].blue * DIVS) / 256);
-    image->data[i].green = floor((image->data[i].green * DIVS) / 256);
+    image->data[i].red = floor((image->data[i].red * DIVS) / 256.0);
+    image->data[i].green = floor((image->data[i].green * DIVS) / 256.0);
+    image->data[i].blue = floor((image->data[i].blue * DIVS) / 256.0);
   }
 
-  count = 0;
-// #pragma omp parallel for collapse(3)
+// Step 2: Inicializa o histograma
 #pragma omp parallel for
-  for (j = 0; j <= DIVS - 1; j++) {
-    for (k = 0; k <= DIVS - 1; k++) {
-      for (l = 0; l <= DIVS - 1; l++) {
-        count = 0;
-        for (i = 0; i < n; i++) {
-          if (image->data[i].red == j && image->data[i].green == k &&
-              image->data[i].blue == l) {
-            count++;
+  for (i = 0; i < DIVS * DIVS * DIVS; i++) {
+    h[i] = 0.0;
+  }
+
+#pragma omp parallel
+  {
+    float local_h[DIVS * DIVS * DIVS] = {0};
+
+#pragma omp for collapse(3)
+    for (j = 0; j < DIVS; j++) {
+      for (k = 0; k < DIVS; k++) {
+        for (l = 0; l < DIVS; l++) {
+          int count = 0;
+
+          for (i = 0; i < n; i++) {
+            if (image->data[i].red == j && image->data[i].green == k &&
+                image->data[i].blue == l) {
+              count++;
+            }
           }
+
+          local_h[j * DIVS * DIVS + k * DIVS + l] = count;
         }
-        h[DIVS * DIVS * j + DIVS * k + l] = (float)count / n;
       }
     }
+
+#pragma omp critical
+    {
+      for (int idx = 0; idx < DIVS * DIVS * DIVS; idx++) {
+        h[idx] += local_h[idx];
+      }
+    }
+  }
+
+  // Step 4: Normaliza o histograma
+  for (i = 0; i < DIVS * DIVS * DIVS; i++) {
+    h[i] = h[i] / n;
   }
 }
 
@@ -131,16 +151,20 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < DIVS * DIVS * DIVS; i++)
     h[i] = 0.0;
 
-  clock_t inicio = clock();
+  double start_time = omp_get_wtime();
   Histogram(image, h);
-  clock_t fim = clock();
+  double end_time = omp_get_wtime();
 
-  double tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
-  printf("Tempo de execução: %f segundos\n", tempo_execucao);
+  double elapsed_time = end_time - start_time;
+  printf("Tempo de execução: %f segundos\n", elapsed_time);
 
+  float sum = 0;
   for (i = 0; i < DIVS * DIVS * DIVS; i++) {
     printf("%0.3f ", h[i]);
+    sum += h[i];
   }
+
+  printf("%f\n", sum);
   printf("\n");
   free(h);
 
