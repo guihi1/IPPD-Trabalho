@@ -81,8 +81,8 @@ Na tabela abaixo, o programa foi executado 10 vezes e foi utilizado a média de 
 
 Aqui o programa foi executado 50 vezes com 8 threads para cada situação e foi usado a média na tabela. Além disso, foi utilizado uma máquina diferente para os testes, por isso a diferença grande entre a tabela anterior e a tabela abaixo.
 
-| `collapse(3)` | `collapse(2)` | without `collapse` |
-| ------------- | ------------- | ------------------ |
-| 4.61677       | 4.874346      | 4.843775           |
+| `collapse(3)` (s) | `collapse(2)` (s) | without `collapse` (s) |
+| ----------------- | ----------------- | ---------------------- |
+| 4.61677           | 4.874346          | 4.843775               |
 
 Como pode ser visto, a diferença foi bem pequena entre todas as situações, sendo que utilizando `collapse(3)` foi ligeiramente mais rápido nesses testes.
