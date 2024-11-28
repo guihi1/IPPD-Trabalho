@@ -68,7 +68,7 @@ Por fim, depois que as threads calculam os valores locais em `local_h`, os resul
 
 ## Speedup
 
-Nessa tabela abaixo, o programa foi executado 10 vezes e foi utilizado a média de todos os tempos para o tempo da tabela. Para o cálculo do speedup, foi divido o médio com 1 thread pelo tempo que levou para X threads.
+Na tabela abaixo, o programa foi executado 10 vezes e foi utilizado a média de todos os tempos para o tempo da tabela. Para o cálculo do speedup, foi divido o médio com 1 thread pelo tempo que levou para X threads.
 
 | N° threads | Tempo (s)   | Speedup  |
 | ---------- | ----------- | -------- |
@@ -76,3 +76,13 @@ Nessa tabela abaixo, o programa foi executado 10 vezes e foi utilizado a média 
 | 2          | 16.7922666  | 1.794618 |
 | 4          | 11.1633347  | 2.6995   |
 | 8          | 8.01657714  | 3.759172 |
+
+## Análise do algoritmo sem e com `collapse`
+
+Aqui o programa foi executado 50 vezes com 8 threads para cada situação e foi usado a média na tabela. Além disso, foi utilizado uma máquina diferente para os testes, por isso a diferença grande entre a tabela anterior e a tabela abaixo.
+
+| `collapse(3)` | `collapse(2)` | without `collapse` |
+| ------------- | ------------- | ------------------ |
+| 4.61677       | 4.874346      | 4.843775           |
+
+Como pode ser visto, a diferença foi bem pequena entre todas as situações, sendo que utilizando `collapse(3)` foi ligeiramente mais rápido nesses testes.
